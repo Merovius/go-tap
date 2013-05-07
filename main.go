@@ -129,7 +129,7 @@ func NewParser(r io.Reader) (*Parser, error) {
 		p.suite.plan = i
 
 		line, err = p.r.ReadString('\n')
-		if err != nil {
+		if err != nil && err != io.EOF {
 			return nil, err
 		}
 		line = strings.TrimSpace(line)
@@ -157,8 +157,10 @@ func (p *Parser) Next() (*Testline, error) {
 		switch err {
 		case nil:
 		case io.EOF:
-			p.suite.Tests = append(p.suite.Tests, t)
-			return t, nil
+			if len(line) == 0 {
+				p.suite.Tests = append(p.suite.Tests, t)
+				return t, nil
+			}
 		default:
 			return nil, err
 		}
@@ -176,8 +178,10 @@ func (p *Parser) Next() (*Testline, error) {
 				switch err {
 				case nil:
 				case io.EOF:
-					p.suite.Tests = append(p.suite.Tests, t)
-					return t, nil
+					if len(line) == 0 {
+						p.suite.Tests = append(p.suite.Tests, t)
+						return t, nil
+					}
 				default:
 					return nil, err
 				}

@@ -12,8 +12,7 @@ func ExampleNewParser() {
 ok 1 Squiggle
 not ok 2 Wiggle
 # Doesn't wiggle
-not ok 3 Fliggle # TODO Fliggling not implemented yet
-`)
+not ok 3 Fliggle # TODO Fliggling not implemented yet`)
 	p, err := tap.NewParser(r)
 	if err != nil {
 		panic(err)
