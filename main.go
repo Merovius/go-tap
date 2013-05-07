@@ -168,7 +168,11 @@ func (p *Parser) Next() (*Testline, error) {
 
 		var matches []string
 		if matches = diagnosticsRE.FindStringSubmatch(line); matches != nil {
-			t.Diagnostic = t.Diagnostic + matches[1] + "\n"
+			if len(t.Diagnostic) == 0 {
+				t.Diagnostic = matches[1]
+			} else {
+				t.Diagnostic = t.Diagnostic + "\n" + matches[1]
+			}
 			continue
 		}
 

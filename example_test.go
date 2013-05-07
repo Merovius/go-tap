@@ -38,6 +38,5 @@ not ok 3 Fliggle # TODO Fliggling not implemented yet`)
 	// Output:
 	// Test 1 ok
 	// Test 2 not ok: Doesn't wiggle
-	//
 	// Test 3 not ok:
 }
