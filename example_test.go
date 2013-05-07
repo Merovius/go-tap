@@ -27,7 +27,7 @@ not ok 3 Fliggle # TODO Fliggling not implemented yet`)
 		return
 	}
 
-	for _, t := range(suite.Tests) {
+	for _, t := range suite.Tests {
 		if t.Ok {
 			fmt.Println("Test", t.Num, "ok")
 		} else {
