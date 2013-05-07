@@ -246,3 +246,39 @@ func (p *Parser) Suite() (*Testsuite, error) {
 
 	return &p.suite, nil
 }
+
+// Summarizes the Testline into a short String.
+//
+// The string will be formatted as followed: First a status (ok/fail/todo/skip)
+// in […], then the description of the test, last the diagnostic-message, if
+// the test failed and had such a message attached to it, or an explanation, if
+// the test had a TODO/SKIP directive with an explanation attached.
+func (t *Testline) String() string {
+	s := "["
+	switch t.Directive {
+	case None:
+		if t.Ok {
+			s += " ok "
+		} else {
+			s += "fail"
+		}
+	case Todo:
+		s += "todo"
+	case Skip:
+		s += "skip"
+	}
+	s += "] "
+	s += t.Description
+
+	if t.Directive != None {
+		if len(t.Explanation) > 0 {
+			s += " # " + t.Explanation
+		}
+	} else if !t.Ok {
+		if len(t.Diagnostic) > 0 {
+			s += " # " + t.Diagnostic
+		}
+	}
+
+	return s
+}

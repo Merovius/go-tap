@@ -28,15 +28,11 @@ not ok 3 Fliggle # TODO Fliggling not implemented yet`)
 	}
 
 	for _, t := range suite.Tests {
-		if t.Ok {
-			fmt.Println("Test", t.Num, "ok")
-		} else {
-			fmt.Println("Test", t.Num, "not ok:", t.Diagnostic)
-		}
+		fmt.Println(t)
 	}
 
 	// Output:
-	// Test 1 ok
-	// Test 2 not ok: Doesn't wiggle
-	// Test 3 not ok:
+	// [ ok ] Squiggle
+	// [fail] Wiggle # Doesn't wiggle
+	// [todo] Fliggle # Fliggling not implemented yet
 }
