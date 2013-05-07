@@ -6,7 +6,7 @@ import (
 )
 
 func ExampleNewParser() {
-	r := strings.NewReader(`TAP version 14
+	r := strings.NewReader(`TAP version 13
 1..3
 ok 1 Squiggle
 not ok 2 Wiggle

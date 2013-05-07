@@ -1,3 +1,4 @@
+// Package tap implements a basic parser for the Test Anything Protocol
 package tap
 
 import (
