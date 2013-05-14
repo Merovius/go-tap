@@ -124,7 +124,7 @@ func NewParser(r io.Reader) (*Parser, error) {
 	if matches = planRE.FindStringSubmatch(line); matches != nil {
 		i, err := strconv.Atoi(matches[1])
 		if err != nil {
-			return nil, fmt.Errorf("Could not parse plan \"%s\":", matches[0], err)
+			return nil, fmt.Errorf("Could not parse plan \"%s\": %s", matches[0], err)
 		}
 		p.suite.plan = i
 
@@ -205,7 +205,7 @@ func (p *Parser) Next() (*Testline, error) {
 			}
 			i, err := strconv.Atoi(matches[1])
 			if err != nil {
-				return nil, fmt.Errorf("Could not parse plan \"%s\":", matches[0], err)
+				return nil, fmt.Errorf("Could not parse plan \"%s\": %s", matches[0], err)
 			}
 			p.suite.plan = i
 			p.suite.Tests = append(p.suite.Tests, t)
