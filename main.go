@@ -13,7 +13,7 @@ import (
 var (
 	planRE        = regexp.MustCompile(`^1..(\d+)$`)
 	versionRE     = regexp.MustCompile(`^TAP version (\d+)$`)
-	testlineRE    = regexp.MustCompile(`^(not )?ok(?:\s+(\d+)\s*)?(?:\s*([\D\S][^#]+?)\s*)?(?i:#\s+(todo|skip))?(?:\s+(.*))?$`)
+	testlineRE    = regexp.MustCompile(`^(not )?ok(?:\s+(\d+)\s*)?(?:\s*([\D\S][^#]+?)\s*)?(?i:#\s+(todo|skip)(?:\s+(.*))?)?$`)
 	diagnosticsRE = regexp.MustCompile(`^\s*#\s+(.*)$`)
 	yamlStartRE   = regexp.MustCompile(`\s*---\s*$`)
 	yamlEndRE     = regexp.MustCompile(`\s*...\s*$`)
