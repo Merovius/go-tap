@@ -13,10 +13,11 @@ import (
 var (
 	planRE        = regexp.MustCompile(`^1..(\d+)$`)
 	versionRE     = regexp.MustCompile(`^TAP version (\d+)$`)
-	testlineRE    = regexp.MustCompile(`^(not )?ok(?:\s+(\d+)\s*)?(?:\s*([\D\S][^#]+?)\s*)?(?i:#\s+(todo|skip)(?:\s+(.*))?)?$`)
+	testlineRE    = regexp.MustCompile(`^(not )?ok(?: ([0-9]+))?(?:(?: - )?(.*))?$`)
+	skiptodoRE    = regexp.MustCompile(`\s?(?i:#\s+(todo|skip)(?:\s+(.*))?)?$`)
 	diagnosticsRE = regexp.MustCompile(`^\s*#\s+(.*)$`)
 	yamlStartRE   = regexp.MustCompile(`\s*---\s*$`)
-	yamlEndRE     = regexp.MustCompile(`\s*...\s*$`)
+	yamlEndRE     = regexp.MustCompile(`\s*\.\.\.\s*$`)
 )
 
 // A TAP-Directive (Todo/Skip)
@@ -66,38 +67,35 @@ type Parser struct {
 }
 
 func (p *Parser) parseLine(line string) (*Testline, error) {
-	var err error
-
 	matches := testlineRE.FindStringSubmatch(line)
 	if matches == nil {
-		return nil, fmt.Errorf("Does not match Testline: \"%s\"", line)
+		// Ignoring line, as per specification
+		// "A TAP parser is required to not consider an unknown line as an error"
+		return nil, nil
 	}
 
 	t := new(Testline)
-
 	t.Ok = (len(matches[1]) == 0)
+	t.Description = strings.TrimSpace(matches[3])
 
 	if len(matches[2]) > 0 {
-		var i int
-		i, err = strconv.Atoi(matches[2])
-		if err != nil {
-			return nil, fmt.Errorf("Could not parse Testnumber \"%s\"", matches[2])
-		}
+		i, _ := strconv.Atoi(matches[2])
 		t.Num = uint(i)
 	}
 
-	t.Description = matches[3]
+	matches = skiptodoRE.FindStringSubmatch(t.Description)
+	if len(matches[1]) == 0 {
+		return t, nil
+	}
 
-	switch strings.ToLower(matches[4]) {
-	case "":
-		t.Directive = None
+	switch strings.ToLower(matches[1]) {
 	case "todo":
 		t.Directive = Todo
 	case "skip":
 		t.Directive = Skip
 	}
-
-	t.Explanation = matches[5]
+	t.Description = strings.Replace(t.Description, matches[0], "", 1)
+	t.Explanation = matches[2]
 
 	return t, nil
 }
@@ -122,12 +120,7 @@ func NewParser(r io.Reader) (*Parser, error) {
 
 	var matches []string
 	if matches = planRE.FindStringSubmatch(line); matches != nil {
-		i, err := strconv.Atoi(matches[1])
-		if err != nil {
-			return nil, fmt.Errorf("Could not parse plan \"%s\": %s", matches[0], err)
-		}
-		p.suite.plan = i
-
+		p.suite.plan, _ = strconv.Atoi(matches[1])
 		line, err = p.r.ReadString('\n')
 		if err != nil && err != io.EOF {
 			return nil, err
@@ -145,12 +138,10 @@ func (p *Parser) Next() (*Testline, error) {
 	if len(p.line) == 0 {
 		return nil, io.EOF
 	}
-	t, err := p.parseLine(p.line)
-	if err != nil {
-		return nil, err
-	}
+	test, _ := p.parseLine(p.line)
 	p.line = ""
 
+	var err error
 	var line string
 	for {
 		line, err = p.r.ReadString('\n')
@@ -158,8 +149,10 @@ func (p *Parser) Next() (*Testline, error) {
 		case nil:
 		case io.EOF:
 			if len(line) == 0 {
-				p.suite.Tests = append(p.suite.Tests, t)
-				return t, nil
+				if test != nil {
+					p.suite.Tests = append(p.suite.Tests, test)
+				}
+				return test, nil
 			}
 		default:
 			return nil, err
@@ -168,23 +161,28 @@ func (p *Parser) Next() (*Testline, error) {
 
 		var matches []string
 		if matches = diagnosticsRE.FindStringSubmatch(line); matches != nil {
-			if len(t.Diagnostic) == 0 {
-				t.Diagnostic = matches[1]
+			if test == nil {
+				continue
+			}
+			if len(test.Diagnostic) == 0 {
+				test.Diagnostic = matches[1]
 			} else {
-				t.Diagnostic = t.Diagnostic + "\n" + matches[1]
+				test.Diagnostic = test.Diagnostic + "\n" + matches[1]
 			}
 			continue
 		}
 
 		if yamlStartRE.MatchString(line) {
+			test.Yaml = make([]byte, 0)
 			for {
 				yaml, err := p.r.ReadBytes('\n')
+
 				switch err {
 				case nil:
 				case io.EOF:
 					if len(line) == 0 {
-						p.suite.Tests = append(p.suite.Tests, t)
-						return t, nil
+						p.suite.Tests = append(p.suite.Tests, test)
+						return test, nil
 					}
 				default:
 					return nil, err
@@ -192,9 +190,8 @@ func (p *Parser) Next() (*Testline, error) {
 				if yamlEndRE.Match(yaml) {
 					break
 				}
-				buf := make([]byte, len(t.Yaml)+len(yaml))
-				copy(buf[:len(t.Yaml)], t.Yaml)
-				copy(buf[len(t.Yaml):], yaml)
+
+				test.Yaml = append(test.Yaml, yaml...)
 			}
 			continue
 		}
@@ -203,21 +200,19 @@ func (p *Parser) Next() (*Testline, error) {
 			if p.suite.plan != -1 {
 				return nil, fmt.Errorf("Double plan")
 			}
-			i, err := strconv.Atoi(matches[1])
-			if err != nil {
-				return nil, fmt.Errorf("Could not parse plan \"%s\": %s", matches[0], err)
-			}
-			p.suite.plan = i
-			p.suite.Tests = append(p.suite.Tests, t)
-			return t, nil
+			p.suite.plan, _ = strconv.Atoi(matches[1])
+			p.suite.Tests = append(p.suite.Tests, test)
+			return test, nil
 		}
 		break
 	}
 
 	p.line = line
-	p.suite.Tests = append(p.suite.Tests, t)
+	if test != nil {
+		p.suite.Tests = append(p.suite.Tests, test)
+	}
 
-	return t, nil
+	return test, nil
 }
 
 // Get the whole Testsuite.
@@ -230,6 +225,10 @@ func (p *Parser) Suite() (*Testsuite, error) {
 		}
 		if err != nil {
 			return nil, err
+		}
+		// skip line
+		if t == nil {
+			continue
 		}
 		if !t.Ok {
 			p.suite.Ok = false
