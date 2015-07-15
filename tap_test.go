@@ -116,6 +116,10 @@ ok 4 - (unnamed assert)
 	if suite.Tests[3].String() != "[ ok ] (unnamed assert)" {
 		t.Errorf("Unexpected string, got: %v", suite.Tests[3].String())
 	}
+
+	if suite.Passed != 3 {
+		t.Errorf("Unexpected 3 passed test, got: %v", suite.Passed)
+	}
 }
 
 func TestSkip(t *testing.T) {
@@ -155,6 +159,13 @@ ok 5 - # SKIP no /sys directory
 	}
 	if suite.Tests[1].String() != "[skip]  # no /sys directory" {
 		t.Errorf("Unexpected string, got: %v", suite.Tests[1].String())
+	}
+
+	if suite.Passed != 1 {
+		t.Errorf("Unexpected 1 passed test, got: %v", suite.Passed)
+	}
+	if suite.Skipped != 4 {
+		t.Errorf("Unexpected 4 skipped test, got: %v", suite.Skipped)
 	}
 }
 
@@ -226,10 +237,6 @@ func TestEmptyPlan(t *testing.T) {
 	if suite.Ok {
 		t.Errorf("Expect suite to be failed, got: %v", suite.Ok)
 	}
-
-	for _, t := range suite.Tests {
-		fmt.Println(t)
-	}
 }
 
 func TestYaml(t *testing.T) {
@@ -275,6 +282,13 @@ not ok 1 Resolve address
 
 	if string(suite.Tests[0].Yaml) != expected {
 		t.Errorf("Unexpected string for yaml, got: %v", string(suite.Tests[0].Yaml))
+	}
+
+	if suite.Passed != 0 {
+		t.Errorf("Unexpected 0 passed test, got: %v", suite.Passed)
+	}
+	if suite.Failed != 1 {
+		t.Errorf("Unexpected 1 failed test, got: %v", suite.Failed)
 	}
 }
 

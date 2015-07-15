@@ -54,9 +54,12 @@ type Testline struct {
 
 // The outcome of a Testsuite
 type Testsuite struct {
-	Ok    bool        // Whether the Testsuite as a whole succeded
-	Tests []*Testline // Description of all Testlines
-	plan  int         // Number of tests intended to run
+	Ok      bool        // Whether the Testsuite as a whole succeded
+	Tests   []*Testline // Description of all Testlines
+	plan    int         // Number of tests intended to run
+	Passed  int
+	Failed  int
+	Skipped int
 }
 
 // Parses TAP
@@ -102,7 +105,7 @@ func (p *Parser) parseLine(line string) (*Testline, error) {
 
 // Create a new TAP-Parser from the given reader
 func NewParser(r io.Reader) (*Parser, error) {
-	p := &Parser{bufio.NewReader(r), "", Testsuite{true, nil, -1}}
+	p := &Parser{bufio.NewReader(r), "", Testsuite{true, nil, -1, 0, 0, 0}}
 
 	line, err := p.r.ReadString('\n')
 	if err != nil {
@@ -232,6 +235,16 @@ func (p *Parser) Suite() (*Testsuite, error) {
 		}
 		if !t.Ok {
 			p.suite.Ok = false
+		}
+		switch t.Directive {
+		case None:
+			if t.Ok {
+				p.suite.Passed++
+			} else {
+				p.suite.Failed++
+			}
+		case Skip:
+			p.suite.Skipped++
 		}
 	}
 	if p.suite.plan == 0 {
