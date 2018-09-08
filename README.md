@@ -1,6 +1,8 @@
 package tap
 ===========
 
+**This repository is unmaintained. Don't use it.**
+
 This is a basic [TAP (Test Anything Protocol)] [tap] parser for the [go programming language] [golang]. It can be used in TAP-consumers (for example Test-harnesses) to parse valid [TAP version 13] [tap13].
 
   [tap]: http://http://testanything.org/
