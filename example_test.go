@@ -1,8 +1,7 @@
-package tap_test
+package tap
 
 import (
 	"fmt"
-	"github.com/Merovius/go-tap"
 	"strings"
 )
 
@@ -13,7 +12,7 @@ ok 1 Squiggle
 not ok 2 Wiggle
 # Doesn't wiggle
 not ok 3 Fliggle # TODO Fliggling not implemented yet`)
-	p, err := tap.NewParser(r)
+	p, err := NewParser(r)
 	if err != nil {
 		panic(err)
 	}
