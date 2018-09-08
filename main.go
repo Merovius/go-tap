@@ -20,6 +20,8 @@ var (
 )
 
 // A TAP-Directive (Todo/Skip)
+//
+// Deprecated: Project is unmaintained.
 type Directive int
 
 const (
@@ -28,6 +30,7 @@ const (
 	Skip                  // Testpoint was skipped
 )
 
+// Deprecated: Project is unmaintained.
 func (d Directive) String() string {
 	switch d {
 	case None:
@@ -41,6 +44,8 @@ func (d Directive) String() string {
 }
 
 // A single TAP-Testline
+//
+// Deprecated: Project is unmaintained.
 type Testline struct {
 	Ok          bool      // Whether the Testpoint executed ok
 	Num         uint      // The number of the test
@@ -52,6 +57,8 @@ type Testline struct {
 }
 
 // The outcome of a Testsuite
+//
+// Deprecated: Project is unmaintained.
 type Testsuite struct {
 	Ok    bool        // Whether the Testsuite as a whole succeded
 	Tests []*Testline // Description of all Testlines
@@ -59,6 +66,8 @@ type Testsuite struct {
 }
 
 // Parses TAP
+//
+// Deprecated: Project is unmaintained.
 type Parser struct {
 	r     *bufio.Reader
 	line  string
@@ -103,6 +112,8 @@ func (p *Parser) parseLine(line string) (*Testline, error) {
 }
 
 // Create a new TAP-Parser from the given reader
+//
+// Deprecated: Project is unmaintained.
 func NewParser(r io.Reader) (*Parser, error) {
 	p := &Parser{bufio.NewReader(r), "", Testsuite{true, nil, -1}}
 
@@ -141,6 +152,8 @@ func NewParser(r io.Reader) (*Parser, error) {
 }
 
 // Get the next Testline
+//
+// Deprecated: Project is unmaintained.
 func (p *Parser) Next() (*Testline, error) {
 	if len(p.line) == 0 {
 		return nil, io.EOF
@@ -222,6 +235,8 @@ func (p *Parser) Next() (*Testline, error) {
 
 // Get the whole Testsuite.
 // This will block until the underlying reader reaches EOF or there is an error.
+//
+// Deprecated: Project is unmaintained.
 func (p *Parser) Suite() (*Testsuite, error) {
 	for {
 		t, err := p.Next()
@@ -253,6 +268,8 @@ func (p *Parser) Suite() (*Testsuite, error) {
 // in […], then the description of the test, last the diagnostic-message, if
 // the test failed and had such a message attached to it, or an explanation, if
 // the test had a TODO/SKIP directive with an explanation attached.
+//
+// Deprecated: Project is unmaintained.
 func (t *Testline) String() string {
 	s := "["
 	switch t.Directive {
