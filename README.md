@@ -5,7 +5,7 @@ package tap
 
 This is a basic [TAP (Test Anything Protocol)] [tap] parser for the [go programming language] [golang]. It can be used in TAP-consumers (for example Test-harnesses) to parse valid [TAP version 13] [tap13].
 
-  [tap]: http://http://testanything.org/
+  [tap]: http://testanything.org/
   [tap13]: http://podwiki.hexten.net/TAP/TAP13.html?page=TAP13
   [golang]: http://golang.org/
 
